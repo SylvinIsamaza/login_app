@@ -1,6 +1,6 @@
 const express=require('express');
 const{createUser, login}=require('../controllers/appController');
-const auth = require('../middleware/auth');
+const {auth,verifyUser}= require('../middleware/auth');
 const UserModel = require('../model/User.model');
 const router=express.Router()
 const mongoose=require('mongoose');
@@ -26,7 +26,7 @@ router.post('/authenticate',(req,res)=>{
     res.send('authenticate api')
 })
 // put routes
-router.put('/update',(req,res)=>{
+router.put('/update',verifyUser,(req,res)=>{
     res.send('update api')
 })
 router.put('/resetPassword',(req,res)=>{

@@ -1,4 +1,5 @@
 const UserModel = require("../model/User.model")
+const jwt =require('jsonwebtoken')
 
 const auth=async(req,res,next)=>{
   const {username}=req.method==="GET"?req.query:req.body
@@ -34,4 +35,12 @@ const auth=async(req,res,next)=>{
     }
   }
 }
-module.exports=auth
+async function verifyUser(req,res){
+  const token=req.headers.authorization.split(" ")[1]||req.headers.authorization||req.headers.Authorization;
+  const decodedToken=jwt.verify(token,'secret')
+  req.username=decodedToken.username
+  next()
+
+  
+}
+module.exports={auth,verifyUser}

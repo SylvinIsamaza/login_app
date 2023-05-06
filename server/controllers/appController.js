@@ -36,7 +36,7 @@ async function login(req,res){
        
        const token=jwt.sign({username:username,password:password},'secret')
        res.send({
-        user:user,
+
         token:token
        })
 
@@ -50,5 +50,14 @@ async function login(req,res){
     }
     
 
+}
+async function updateUser(user){
+try{
+    const updatedUser=await UserModel.findOneAndUpdate({username:username},{new:true})
+    res.send(updatedUser)
+}
+catch(err){
+console.log(err)||"failed to update the user"
+}
 }
 module.exports={createUser,login}
