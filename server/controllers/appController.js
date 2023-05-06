@@ -2,7 +2,7 @@ const mongoose=require('mongoose')
 const UserModel=require('../model/User.model')
 const bcrypt=require('bcrypt')
 const jwt=require('jsonwebtoken')
-
+const otpGenerator=require('otp-generator')
 async function createUser(req,res){
     const{username,email,password}=req.body
 bcrypt.hash(password,10)
@@ -51,13 +51,33 @@ async function login(req,res){
     
 
 }
-async function updateUser(user){
+async function updateUser(req,res){
+    const username=req.username
+    const data=req.body;
 try{
-    const updatedUser=await UserModel.findOneAndUpdate({username:username},{new:true})
+    const updatedUser=await UserModel.findOneAndUpdate({username:username},data,{new:true})
     res.send(updatedUser)
 }
 catch(err){
 console.log(err)||"failed to update the user"
 }
 }
-module.exports={createUser,login}
+async function generateOTP(req,res){
+const OTP=otpGenerator.generate(6,{lowerCaseAlphabets:false,upperCaseAlphabets:false,specialChars:false})
+console.log(OTP)
+res.send({
+    otp:OTP
+})
+}
+async function findUser(){
+    const {username}=req.query
+    try{
+        const user=await UserModel.findOne({username:username})
+        res.send(user)
+    }
+    catch(err){
+        console.log(err)||"user not found";
+        res.send(err)
+    }
+}
+module.exports={createUser,login,updateUser,generateOTP}

@@ -35,7 +35,7 @@ const auth=async(req,res,next)=>{
     }
   }
 }
-async function verifyUser(req,res){
+async function verifyUser(req,res,next){
   const token=req.headers.authorization.split(" ")[1]||req.headers.authorization||req.headers.Authorization;
   const decodedToken=jwt.verify(token,'secret')
   req.username=decodedToken.username
