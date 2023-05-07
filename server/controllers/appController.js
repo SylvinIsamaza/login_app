@@ -2,7 +2,9 @@ const mongoose=require('mongoose')
 const UserModel=require('../model/User.model')
 const bcrypt=require('bcrypt')
 const jwt=require('jsonwebtoken')
+
 const otpGenerator=require('otp-generator')
+const { localVariable } = require('../middleware/auth')
 async function createUser(req,res){
     const{username,email,password}=req.body
 bcrypt.hash(password,10)
@@ -35,6 +37,7 @@ async function login(req,res){
         console.log('successfull logged in')
        
        const token=jwt.sign({username:username,password:password},'secret')
+       
        res.send({
 
         token:token
@@ -65,19 +68,50 @@ console.log(err)||"failed to update the user"
 async function generateOTP(req,res){
 const OTP=otpGenerator.generate(6,{lowerCaseAlphabets:false,upperCaseAlphabets:false,specialChars:false})
 console.log(OTP)
+req.app.locals.OTP=OTP
+req.app.locals.resetSession=true
 res.send({
     otp:OTP
 })
 }
-async function findUser(){
-    const {username}=req.query
+async function findUser(req,res){
+    const {username}=req.params
     try{
         const user=await UserModel.findOne({username:username})
-        res.send(user)
+        if(user==null){
+            console.log("user not found")
+            res.send("user not found")
+        }
+        else{
+res.send(user)
+        }
+        
     }
     catch(err){
         console.log(err)||"user not found";
         res.send(err)
     }
 }
-module.exports={createUser,login,updateUser,generateOTP}
+async function verifyOTP(req,res){
+    const {otp}=req.query
+    console.log(req.app.locals.OTP)
+    if(parseInt(otp)==parseInt(req.app.locals.OTP)){
+        console.log("otp verified")
+        res.send("otp verified")
+    }
+    else{
+        console.log("otp not verified")
+                res.send("otp not verified")
+    }
+}
+async function createResetSession(req,res){
+if(req.app.locals.resetSession){
+    req.app.locals=false; // this is to allow only one to reset one reset the password
+    res.status(200).send({msg:"access granted"})
+}
+else{
+    console.log('session expired')
+    res.status(400).send({msg:"access denied"})
+}
+}
+module.exports={createUser,login,updateUser,generateOTP,findUser,verifyOTP,createResetSession}

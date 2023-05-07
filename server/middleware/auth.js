@@ -43,4 +43,10 @@ async function verifyUser(req,res,next){
 
   
 }
-module.exports={auth,verifyUser}
+async function localVariable(req,res){
+  req.app.locals={
+    OTP:null,
+  resetSession:false
+  }
+}
+module.exports={auth,verifyUser,localVariable}

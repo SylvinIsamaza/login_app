@@ -1,22 +1,16 @@
 const express=require('express');
-const{createUser, login,updateUser,generateOTP}=require('../controllers/appController');
+const{createUser, login,updateUser,generateOTP,findUser,verifyOTP,createResetSession}=require('../controllers/appController');
 const {auth,verifyUser}= require('../middleware/auth');
 const UserModel = require('../model/User.model');
 const router=express.Router()
 const mongoose=require('mongoose');
 // get routes
 
-router.get('/generateOTP',verifyUser,generateOTP)
-router.get('/user/:username',(req,res)=>{
-    res.send('user')
-
-})
-router.get('/verifyOTP',(req,res)=>{
-    res.send('verifyOTP')
-})
-router.get('/createResetSession',(req,res)=>{
-res.send('resetSession')
-})
+router.get('/generateOTP',auth,generateOTP)
+router.get('/user/:username',findUser
+)
+router.get('/verifyOTP',verifyOTP)
+router.get('/createResetSession',createResetSession)
 //  post routes
 router.post('/register',createUser)
 router.post('/login',auth,login)
