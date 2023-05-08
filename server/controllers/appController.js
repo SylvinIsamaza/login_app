@@ -17,7 +17,7 @@ bcrypt.hash(password,10)
     })
     await user.save()
     console.log(user)
-    res.status(201).send('user successfully registered')
+    res.status(201).send({msg:'user successfully registered'})
 })
     
    
