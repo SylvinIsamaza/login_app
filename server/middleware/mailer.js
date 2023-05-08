@@ -1,12 +1,16 @@
 const nodemailer=require('nodemailer')
 const mailgen=require('mailgen')
+const dotenv=require('dotenv')
+const { localVariable } = require('./auth')
+dotenv.config()
+
 const transporter=nodemailer.createTransport({
-    host:"ethereal.mail",
-    port:544,
+    host:process.env.HOST,
+    port:process.env.PORT,
     secure:false,
     auth:{
-        user:"isamazasylvain",
-        pass:'gfhklgjfadssssshjgf'
+        user:'lillian.grant@ethereal.email',
+        pass:process.env.PASS
     }
 })
 const Mailgenerator=new mailgen({
@@ -18,18 +22,27 @@ product:{
 })
 async function registerMail(req,res){
     const{username,useremail,text,subject}=req.body
+    /*
+    
+    {username:"isamazasylvain",
+    useremail:"isamazasylvain@gmail.com",
+    text:"welcome to the login app",
+    subject:"welcome to the login app"
+
+}
+    */
     const email={
         body:{
             name:username,
             intro:text||'welcome to the login app',
-            outro:'if you have any question please send me an email'
+            outro:`this is your OTP ${req.app.locals.OTP} if you have any question please send me an email`
         }
         
         
     }
     const emailbody=Mailgenerator.generate(email)
     let message={
-        from:'isamazasylvain@gmail.com',
+        from:'lillian.grant@ethereal.email',
         to:useremail,
         subject:subject,
         html:emailbody
@@ -37,12 +50,17 @@ async function registerMail(req,res){
 transporter.sendMail(message)
 .then(()=>{
     console.log('email successfully sent successfully')
+
     return res.send('email successfully sent')
+
 }
     
 )
 .catch(err=>{
+    console.log(process.env.USERNAME)
+    console.log(err)
     return res.status(500).send("email not sent")
+   
 })
 }
 module.exports=registerMail
