@@ -2,6 +2,7 @@ const mongoose=require('mongoose')
 const UserModel=require('../model/User.model')
 const bcrypt=require('bcrypt')
 const jwt=require('jsonwebtoken')
+const lodash=require('lodash')
 
 const otpGenerator=require('otp-generator')
 const { localVariable } = require('../middleware/auth')
@@ -83,7 +84,8 @@ async function findUser(req,res){
             res.send("user not found")
         }
         else{
-res.send(user)
+        
+res.send(lodash.pick(user,['username','_id','email']))
         }
         
     }
@@ -96,6 +98,7 @@ async function verifyOTP(req,res){
     const {otp}=req.query
     console.log(req.app.locals.OTP)
     if(parseInt(otp)==parseInt(req.app.locals.OTP)){
+        req.app.locals.OTP=null
         console.log("otp verified")
         res.send("otp verified")
     }
@@ -114,4 +117,37 @@ else{
     res.status(400).send({msg:"access denied"})
 }
 }
-module.exports={createUser,login,updateUser,generateOTP,findUser,verifyOTP,createResetSession}
+async function resetPassword(req,res){
+    if(!req.app.locals.resetSession){
+        console.log('session expired')
+       return res.status(400).send({msg:"session expired"})
+    }
+const{username,password}=req.body;
+try {
+    UserModel.findOne({username:username})
+    .then(user =>{
+        bcrypt.hash(password,10)
+        .then(hashedPassword=>{
+    
+            UserModel.updateOne({username:username},{password:hashedPassword})
+            .then(user=>{
+                req.app.locals.resetSession=false;
+              return res.status(201).send("record successfully updated")
+            })
+            .catch(error=>{
+                return res.status(500).send({error:"failed to reset the password"})
+            })
+        })
+        .catch(error=>{
+            res.status(500).send({error:"unable to hash password"})
+        })
+    })
+   
+    .catch(error=>{
+        return res.status(404).send({error:"user not found"})
+    })
+} catch (error) {
+    return res.status(500).send(error)
+}
+}
+module.exports={createUser,login,updateUser,generateOTP,findUser,verifyOTP,createResetSession,resetPassword}
